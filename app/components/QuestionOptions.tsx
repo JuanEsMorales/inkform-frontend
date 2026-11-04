@@ -9,16 +9,18 @@ export function QuestionOptions({
   handleAddOption,
   handleToggleObligatoria,
   handleChangeOptiontext,
-  handleDeleteOption
+  handleDeleteOption,
+  handleCancelEditing
 }: {
     pregunta: QuestionToShow;
     handleChangeEditing: (id: string | undefined) => void;
     handleChangeQuestionTitle: (e: React.ChangeEvent<HTMLInputElement>) => void;
-    handleChangeSelect: (e: React.ChangeEvent<HTMLSelectElement>) => void;
+    handleChangeSelect: (id: string | undefined, tipo: QuestionToShow["tipo"]) => void;
     handleAddOption: (id: string | undefined) => void;
     handleChangeOptiontext: (questionId: string | undefined, index: number, texto: string) => void;
     handleToggleObligatoria: (id: string | undefined) => void;
     handleDeleteOption: (questionId: string | undefined, index: number) => void;
+    handleCancelEditing: (id: string | undefined) => void;
 }) {
   const { id, texto, tipo, obligatoria, options, isEditing } = pregunta;
   return (
@@ -78,9 +80,9 @@ export function QuestionOptions({
                 <select
                   name="tipo"
                   id={id}
-                  defaultValue={tipo}
+                  value={tipo}
                   className="cursor-pointer appearance-none rounded-full border-2 border-gray-200 bg-white py-2 pl-4 pr-10 text-sm font-medium text-gray-700 outline-none transition hover:border-gray-300 focus:border-accent"
-                  onChange={handleChangeSelect}
+                  onChange={(e) => handleChangeSelect(id, e.target.value as QuestionToShow["tipo"])}
                 >
                   <option value="TEXTO CORTO">Respuesta corta</option>
                   <option value="TEXTO LARGO">Respuesta larga</option>
@@ -142,7 +144,7 @@ export function QuestionOptions({
                   <label htmlFor="obligatoria" className="text-gray-700">Obligatoria</label>
                 </div>
                 <div className="flex gap-4">
-                  <Button text="Cancelar" variant="CANCEL" />
+                  <Button text="Cancelar" variant="CANCEL" handleFunction={() => handleCancelEditing(id)} />
                   <Button
                     text="Listo"
                     variant="PRINCIPAL"

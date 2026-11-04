@@ -12,7 +12,7 @@ import { ButtonLink } from "@/app/components/ButtonLink";
 import { Button } from "@/app/components/Button";
 import { Toaster } from "react-hot-toast";
 import toast from "react-hot-toast";
-import { Formulario, Pregunta } from "@/app/types";
+import { Formulario, Pregunta, QuestionToShow } from "@/app/types";
 import { QuestionText } from "@/app/components/QuestionText";
 import { QuestionOptions } from "@/app/components/QuestionOptions";
 
@@ -32,6 +32,7 @@ export default function Create() {
     return FORMULARIO_INITIAL_STATE;
   });
   const [preguntas, setPreguntas] = useState(PREGUNTAS_INITIAL_STATE);
+  const [preguntaBackup, setPreguntaBackup] = useState<QuestionToShow | null>(null)
 
   const handleChangeTitulo = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -64,6 +65,15 @@ export default function Create() {
 
   const handleChangeIsEditing = (id: string | undefined) => {
     if (!id) return
+    const actual = preguntas.find((p) => p.id === id)
+
+    if (actual && !actual.isEditing) {
+      setPreguntaBackup({
+        ...actual,
+        options: actual.options.map((op) => ({...op })),
+      })
+    }
+
     setPreguntas((prev) =>
       prev.map((p) => (p.id === id ? { ...p, isEditing: !p.isEditing } : p))
     );
@@ -94,13 +104,9 @@ export default function Create() {
     );
   }
 
-  const handleChangeSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const id = e.target.id;
-    const tipo = e.target.value as Pregunta["tipo"];
-
-    setPreguntas((prev) =>
-      prev.map((p) => (p.id === id ? { ...p, tipo } : p))
-    );
+  const handleChangeSelect = (questionId: string | undefined, tipo: Pregunta["tipo"]) => {
+    if (!questionId) return
+    setPreguntas((prev) => prev.map((p) => (p.id === questionId ? { ...p, tipo } : p)))
   }
 
   const handleChangeOptiontext = (questionId: string | undefined, index: number, texto: string) => {
@@ -117,6 +123,15 @@ export default function Create() {
       ...p,
       options: p.options.filter((_, i) => i !== index)
     } : p))
+  }
+
+  const handleCancelEditing = (id: string | undefined) => {
+    if (!id || !preguntaBackup) return
+    setPreguntas((prev) => prev.map((p) => p.id === id ? {
+      ...preguntaBackup,
+      isEditing: false,
+    } : p))
+    setPreguntaBackup(null)
   }
 
   useEffect(() => {
@@ -202,9 +217,12 @@ export default function Create() {
             </section>
             {
               preguntas.map((p) => (
+                p.tipo === "OPCION MULTIPLE" ?
                 <QuestionOptions key={p.id} pregunta={p} handleChangeEditing={handleChangeIsEditing} handleChangeQuestionTitle={handleChangeQuestionTitle} handleAddOption={handleAddOption} handleToggleObligatoria={handleToggleObligatoria} handleChangeSelect={handleChangeSelect}
-                handleChangeOptiontext={handleChangeOptiontext} handleDeleteOption={handleDeleteOption}
-                />
+                  handleChangeOptiontext={handleChangeOptiontext} handleDeleteOption={handleDeleteOption}
+                  handleCancelEditing={handleCancelEditing}
+                  /> :
+                <QuestionText handleCancelEditing={handleCancelEditing} handleChangeEditing={handleChangeIsEditing} handleChangeQuestionTitle={handleChangeQuestionTitle} handleChangeSelect={handleChangeSelect} handleToggleObligatoria={handleToggleObligatoria} pregunta={p} key={p.id} />
               ))
             }
           </>

@@ -37,4 +37,22 @@ export const PREGUNTAS_INITIAL_STATE: QuestionToShow[] = [
     options: OPCIONES_INITIAL_STATE,
     orden: 0,
   },
+  {
+    id: "pregunta2",
+    texto: "¿Qué sugerencia propones?",
+    tipo: "TEXTO LARGO",
+    obligatoria: false,
+    isEditing: false,
+    options: [],
+    orden: 1,
+  },
+  {
+    id: "pregunta3",
+    texto: "¿Cual es tu nombre?",
+    tipo: "TEXTO CORTO",
+    obligatoria: false,
+    isEditing: false,
+    options:[],
+    orden: 1,
+  }
 ];

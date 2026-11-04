@@ -1,22 +1,133 @@
 import { QuestionToShow } from "../types"
+import { Button } from "./Button";
 
-export function QuestionText({ texto, tipo, obligatoria, setInfoQuestion }: QuestionToShow) {
+export function QuestionText({
+  pregunta,
+  handleChangeEditing,
+  handleChangeQuestionTitle,
+  handleChangeSelect,
+  handleToggleObligatoria,
+  handleCancelEditing
+}: {
+    pregunta: QuestionToShow;
+    handleChangeEditing: (id: string | undefined) => void;
+    handleChangeQuestionTitle: (e: React.ChangeEvent<HTMLInputElement>) => void;
+    handleChangeSelect: (id: string | undefined, tipo: QuestionToShow["tipo"]) => void;
+    handleToggleObligatoria: (id: string | undefined) => void;
+    handleCancelEditing: (id: string | undefined) => void;
+}) {
+  const { id, texto, tipo, obligatoria, isEditing } = pregunta;
   return (
-    <div className="flex flex-col gap-4">
-      <label htmlFor="title" className="text-xl">
-        Título del formulario
-      </label>
-      <input
-        type="text"
-        id="title"
-        name="titulo"
-        placeholder="Ej: Encuesta de satisfacción"
-        className="px-2 py-4 border-gray-200 rounded-xl outline-0 text-sm transition focus:border-accent border-3"
-        value={texto}
-      />
-      <p className="text-xl text-gray-700">
-        Ingresa un título descriptivo para tu formulario
-      </p>
+    <div
+      className={`bg-white rounded-xl p-7 shadow-xl flex flex-col relative transition-all ${isEditing ? "gap-5 ring-2 ring-accent/20" : "gap-2"}`}
+    >
+      {isEditing && (
+        <div className="absolute inset-x-0 top-0 h-1.5 rounded-t-xl bg-[linear-gradient(100deg,#ff5a00_0%,#ff006e_50%,#a51cfa_100%)]" />
+      )}
+      <div className="absolute right-4 top-4 text-sm">
+        {isEditing === false && (
+          <Button
+            text="Editar"
+            icon="EDIT"
+            variant="GHOST"
+            size="normal"
+            handleFunction={() => handleChangeEditing(id)}
+          />
+        )}
+      </div>
+      {isEditing === false ? (
+        <>
+          <header className="flex flex-col gap-4 border-b border-gray-300">
+            <h1 className="text-xl">
+              {texto} {obligatoria && <span className="text-red-700">*</span>}
+            </h1>
+            <p className="text-gray-600 mb-2">
+              {tipo === "TEXTO CORTO" && "Respuesta corta"}
+              {tipo === "TEXTO LARGO" && "Respuesta larga"}
+            </p>
+          </header>
+          <div className="flex flex-col gap-2">
+            {tipo === "TEXTO LARGO" ? (
+              <textarea readOnly rows={4} placeholder="Respuesta larga" className="..." />
+            ) : (
+              <input type="text" readOnly placeholder="Respuesta corta" className="..." />
+            )}
+          </div>
+          <p className=" text-gray-500">
+            {obligatoria && "Esta pregunta es obligatoria"}
+          </p>
+        </>
+      ) : (
+        <>
+          <header className="flex flex-col gap-4">
+            <input
+              type="text"
+              name="texto"
+              placeholder="Escribe tu pregunta aquí"
+              className="w-full rounded-xl border-2 border-gray-200 px-4 py-3 text-lg font-medium text-gray-900 outline-none transition placeholder:font-normal placeholder:text-gray-400 focus:border-accent focus:ring-4 focus:ring-accent/10"
+              value={texto}
+              id={id}
+              onChange={handleChangeQuestionTitle}
+            />
+            <div className="flex flex-wrap items-center gap-3">
+              <div className="relative">
+                <select
+                  name="tipo"
+                  id={id}
+                  value={tipo}
+                  className="cursor-pointer appearance-none rounded-full border-2 border-gray-200 bg-white py-2 pl-4 pr-10 text-sm font-medium text-gray-700 outline-none transition hover:border-gray-300 focus:border-accent"
+                  onChange={(e) => handleChangeSelect(id, e.target.value as QuestionToShow["tipo"])}
+                >
+                  <option value="TEXTO CORTO">Respuesta corta</option>
+                  <option value="TEXTO LARGO">Respuesta larga</option>
+                  <option value="OPCION MULTIPLE">Opción múltiple</option>
+                </select>
+                <svg
+                  aria-hidden="true"
+                  className="pointer-events-none absolute right-3 top-1/2 size-4 -translate-y-1/2 text-gray-500"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M6 9l6 6 6-6" />
+                </svg>
+              </div>
+              {obligatoria && (
+                <span className="rounded-full bg-accent/10 px-3 py-1 text-xs font-medium text-accent">
+                  Obligatoria
+                </span>
+              )}
+            </div>
+          </header>
+            <section className="flex flex-col gap-3 border-t border-gray-200 pt-5 [&_svg]:size-5">
+              <div>
+                {tipo === "TEXTO LARGO" ? (
+                  <textarea rows={4} placeholder="Respuesta larga" className="w-full border-b-2 border-gray-200 outline-0 resize-none" />
+                ) : (
+                  <input type="text" readOnly placeholder="Respuesta corta" className="..." />
+                )}
+              </div>
+              <footer className="flex justify-between border-t border-gray-200 p-7">
+                <div className="flex items-center gap-3">
+                  <input type="checkbox" id="obligatoria" checked={obligatoria} onChange={() => handleToggleObligatoria(id)} className="size-4" />
+                  <label htmlFor="obligatoria" className="text-gray-700">Obligatoria</label>
+                </div>
+                <div className="flex gap-4">
+                  <Button text="Cancelar" variant="CANCEL" handleFunction={() => handleCancelEditing(id)} />
+                  <Button
+                    text="Listo"
+                    variant="PRINCIPAL"
+                    icon="CHECK"
+                    handleFunction={() => handleChangeEditing(id)}
+                  />
+              </div>
+            </footer>
+          </section>
+        </>
+      )}
     </div>
-  )
+  );
 }
