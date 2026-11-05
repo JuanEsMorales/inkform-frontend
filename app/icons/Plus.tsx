@@ -7,9 +7,9 @@ return (
     viewBox="0 0 24 24"
     fill="none"
     stroke="currentColor"
-    stroke-width="1"
-    stroke-linecap="round"
-    stroke-linejoin="round"
+    strokeWidth="1"
+    strokeLinecap="round"
+    strokeLinejoin="round"
   >
     <path d="M9 12h6" />
     <path d="M12 9v6" />

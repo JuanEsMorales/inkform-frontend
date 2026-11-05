@@ -7,9 +7,9 @@ return (
  viewBox="0 0 24 24"
  fill="none"
  stroke="#FFFFFF"
- stroke-width="1"
- stroke-linecap="round"
- stroke-linejoin="round"
+ strokeWidth="1"
+ strokeLinecap="round"
+ strokeLinejoin="round"
 >
  <path d="M5 12l5 5l10 -10" />
 </svg>

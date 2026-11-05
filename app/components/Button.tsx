@@ -5,7 +5,7 @@ import { Plus } from "../icons/Plus"
 import { PropButton } from "../types"
 
 const principal = "bg-[linear-gradient(100deg,#ff5a00_0%,#ff006e_50%,#a51cfa_100%)] text-white"
-const cancel = "border-3 border-gray-500 text-gray-700"
+const cancel = "border-3 border-gray-500 bg-gray-100 text-gray-700"
 const accent = "border-2 border-accent text-accent"
 const destructive = "border-3 border-red-300 text-red-700 bg-red-100"
 const ghost = "hover:text-accent text-gray-500"

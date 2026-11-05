@@ -40,3 +40,32 @@ export interface FormularioCompleto {
   preguntas: Pregunta[];
   opciones: Opcion[];
 }
+
+export interface OpcionApi {
+  id_opcion: string;
+  id_pregunta: string;
+  texto: string;
+}
+
+export interface PreguntaApi {
+  id_pregunta: string;
+  id_formulario: string;
+  texto: string;
+  tipo: "OPCION MULTIPLE" | "TEXTO LARGO" | "TEXTO CORTO";
+  obligatoria: number;
+  orden: number;
+}
+
+export interface FormularioApi {
+  id_formulario: string;
+  id_usuario: number;
+  titulo: string;
+  descripcion: string;
+  estado: string;
+  fecha_creacion: string;
+}
+
+export interface FormularioConPreguntas {
+  formulario: FormularioApi;
+  preguntas: { pregunta: PreguntaApi; opciones: OpcionApi[] }[];
+}
