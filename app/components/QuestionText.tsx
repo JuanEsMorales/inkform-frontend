@@ -50,7 +50,7 @@ export function QuestionText({
             {tipo === "TEXTO LARGO" ? (
               <textarea readOnly rows={4} placeholder="Respuesta larga" className="w-full border-b-2 border-gray-200 outline-0 resize-none" />
             ) : (
-              <input type="text" readOnly placeholder="Respuesta corta" className="..." />
+              <input type="text" readOnly placeholder="Respuesta corta" />
             )}
           </div>
           <p className=" text-gray-500">

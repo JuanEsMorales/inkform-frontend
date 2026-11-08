@@ -10,7 +10,7 @@ const cancel = "border-3 border-gray-500 bg-gray-100 text-gray-700"
 const accent = "border-3 border-accent text-accent"
 const destructive = "border-3 border-red-300 text-red-700 bg-red-100"
 const ghost = "hover:text-accent text-gray-500"
-const big = "py-4 px-10 text-xl"
+const big = "py-2 px-6 text-xl"
 const normal = "py-2 px-4"
 
 export function ButtonLink({ variant = "PRINCIPAL", size = "big", href, text, icon }: PropButtonLink) {

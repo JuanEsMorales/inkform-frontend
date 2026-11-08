@@ -10,17 +10,19 @@ export function QuestionOptions({
   handleToggleObligatoria,
   handleChangeOptiontext,
   handleDeleteOption,
-  handleCancelEditing
+  handleCancelEditing,
+  isEdition = false
 }: {
     pregunta: QuestionToShow;
     handleChangeEditing: (id: string | undefined) => void;
     handleChangeQuestionTitle: (e: React.ChangeEvent<HTMLInputElement>) => void;
     handleChangeSelect: (id: string | undefined, tipo: QuestionToShow["tipo"]) => void;
-    handleAddOption: (id: string | undefined) => void;
+    handleAddOption?: (id: string | undefined) => void;
     handleChangeOptiontext: (questionId: string | undefined, index: number, texto: string) => void;
     handleToggleObligatoria: (id: string | undefined) => void;
-    handleDeleteOption: (questionId: string | undefined, index: number) => void;
+    handleDeleteOption?: (questionId: string | undefined, index: number) => void;
     handleCancelEditing: (id: string | undefined) => void;
+    isEdition?: boolean
 }) {
   const { id, texto, tipo, obligatoria, options, isEditing } = pregunta;
   return (
@@ -111,7 +113,7 @@ export function QuestionOptions({
           <section className="flex flex-col gap-3 border-t border-gray-200 pt-5 [&_svg]:size-5">
             <div className="flex flex-col gap-2">
               {options.map((op, index) => (
-                <div key={index} className="group flex items-center gap-3">
+                <div key={op.id_opcion ?? index} className="group flex items-center gap-3">
                   <span
                     aria-hidden="true"
                     className="size-5 shrink-0 rounded-full border-2 border-gray-300 bg-white transition group-focus-within:border-accent"
@@ -125,18 +127,21 @@ export function QuestionOptions({
                     onChange={(e) => handleChangeOptiontext(id, index, e.target.value)}
                     value={op.texto}
                   />
-                  <Button text="" icon="OPTDEL" variant="GHOST" handleFunction={() => handleDeleteOption(id, index)} />
+                  { isEdition === false && <Button text="" icon="OPTDEL" variant="GHOST" handleFunction={() => handleDeleteOption?.(id, index)} /> }
                 </div>
               ))}
             </div>
             <div className="flex">
-              <Button
-                text="Añadir opción"
-                icon="PLUS"
-                variant="ACCENT"
-                size="normal"
-                handleFunction={() => handleAddOption(id)}
-              />
+                {
+                  !isEdition &&
+                  <Button
+                    text="Añadir opción"
+                    icon="PLUS"
+                    variant="ACCENT"
+                    size="normal"
+                    handleFunction={() => handleAddOption?.(id)}
+                  />
+              }
             </div>
               <footer className="flex justify-between border-t border-gray-200 p-7">
                 <div className="flex items-center gap-3">

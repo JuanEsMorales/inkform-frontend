@@ -4,9 +4,11 @@ import Image from "next/image";
 import { useEffect, useState } from "react";
 import { Toaster } from "react-hot-toast";
 import toast from "react-hot-toast";
-import { FormularioConPreguntas } from "../types";
+import { FormularioApi, FormularioConPreguntas } from "../types";
 import { ButtonLink } from "../components/ButtonLink";
 import { Button } from "../components/Button";
+import Link from "next/link";
+import { Trash } from "../icons/Trash";
 
 const ESTADOS: Record<string, { etiqueta: string; clases: string; punto: string }> = {
   PUBLICADO: {
@@ -33,6 +35,8 @@ export default function Dashboard() {
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [refresco, setRefresco] = useState(0);
+  const [accionEnCurso, setAccionEnCurso] = useState<string | null>(null);
+  const [aEliminar, setAEliminar] = useState<FormularioConPreguntas | null>(null);
 
   useEffect(() => {
     let cancelado = false;
@@ -63,6 +67,70 @@ export default function Dashboard() {
     };
   }, [refresco]);
 
+  const cambiarEstado = async (formulario: FormularioApi) => {
+    const nuevoEstado =
+      formulario.estado === "PUBLICADO" ? "SIN PUBLICAR" : "PUBLICADO";
+
+    setAccionEnCurso(formulario.id_formulario);
+    try {
+      const res = await fetch(
+        `http://localhost:3100/forms/${formulario.id_formulario}`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ estado: nuevoEstado }),
+        },
+      );
+      if (!res.ok) throw new Error(await res.text());
+
+      setFormularios((prev) =>
+        prev.map((f) =>
+          f.formulario.id_formulario === formulario.id_formulario
+            ? { ...f, formulario: { ...f.formulario, estado: nuevoEstado } }
+            : f,
+        ),
+      );
+
+      toast.success(
+        nuevoEstado === "PUBLICADO"
+          ? "Formulario publicado"
+          : "Formulario despublicado",
+      );
+    } catch (e) {
+      toast.error(
+        e instanceof Error ? e.message : "No se pudo cambiar el estado",
+      );
+    } finally {
+      setAccionEnCurso(null);
+    }
+  };
+
+  const eliminar = async () => {
+    if (!aEliminar || accionEnCurso) return;
+    const id = aEliminar.formulario.id_formulario;
+
+    setAccionEnCurso(id);
+    try {
+      const res = await fetch(`http://localhost:3100/forms/${id}`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+      });
+      if (!res.ok) throw new Error(await res.text());
+
+      setFormularios((prev) =>
+        prev.filter((f) => f.formulario.id_formulario !== id),
+      );
+      setAEliminar(null);
+      toast.success("Formulario eliminado");
+    } catch (e) {
+      toast.error(
+        e instanceof Error ? e.message : "No se pudo eliminar el formulario",
+      );
+    } finally {
+      setAccionEnCurso(null);
+    }
+  };
+
   const reintentar = () => {
     setError(null);
     setCargando(true);
@@ -78,6 +146,43 @@ export default function Dashboard() {
   return (
     <main className="min-h-dvh bg-bg-principal px-6 py-10 sm:px-10 lg:px-20">
       <Toaster position="top-right" />
+
+      {aEliminar && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
+          onClick={() => !accionEnCurso && setAEliminar(null)}
+        >
+          <div
+            className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+            role="dialog"
+            aria-modal="true"
+          >
+            <h3 className="text-lg font-semibold text-gray-900">
+              ¿Eliminar formulario?
+            </h3>
+            <p className="mt-2 text-sm text-gray-600">
+              Vas a eliminar <strong>{aEliminar.formulario.titulo}</strong> y sus{" "}
+              {aEliminar.preguntas.length} preguntas. Esta acción no se puede
+              deshacer.
+            </p>
+            <div className="mt-6 flex justify-end gap-3">
+              <Button
+                text="Cancelar"
+                variant="CANCEL"
+                size="normal"
+                handleFunction={() => setAEliminar(null)}
+              />
+              <Button
+                text="Eliminar"
+                variant="DESTRUCTIVE"
+                size="normal"
+                handleFunction={eliminar}
+              />
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-10">
         <header className="flex flex-wrap items-center justify-between gap-6">
@@ -125,7 +230,7 @@ export default function Dashboard() {
           ) : formularios.length === 0 ? (
             <EstadoVacio />
           ) : (
-            <TablaFormularios formularios={ordenados} />
+            <TablaFormularios formularios={ordenados} accionEnCurso={accionEnCurso} onCambiarEstado={cambiarEstado} onEliminar={setAEliminar} />
           )}
         </section>
       </div>
@@ -133,14 +238,25 @@ export default function Dashboard() {
   );
 }
 
-function TablaFormularios({ formularios }: { formularios: FormularioConPreguntas[] }) {
+function TablaFormularios({
+  formularios,
+  onCambiarEstado,
+  onEliminar,
+  accionEnCurso,
+}: {
+  formularios: FormularioConPreguntas[];
+  onCambiarEstado: (f: FormularioApi) => void;
+  onEliminar: (f: FormularioConPreguntas) => void;
+  accionEnCurso: string | null;
+}) {
+
   return (
     <div className="overflow-hidden rounded-2xl bg-white shadow-xl ring-1 ring-black/5">
       <div className="overflow-x-auto">
-        <table className="w-full min-w-[720px] border-collapse text-left">
+        <table className="w-full min-w-180 border-collapse text-left">
           <thead>
             <tr className="border-b border-gray-100 bg-gray-50">
-              {["Formulario", "Preguntas", "Estado", "Fecha de creación"].map(
+              {["Formulario", "Preguntas", "Estado", "Fecha de creación", "Acciones"].map(
                 (titulo) => (
                   <th
                     key={titulo}
@@ -156,16 +272,16 @@ function TablaFormularios({ formularios }: { formularios: FormularioConPreguntas
             {formularios.map(({ formulario, preguntas }) => {
               const estado =
                 ESTADOS[formulario.estado] ?? ESTADOS["SIN PUBLICAR"];
-
+              const ocupado = accionEnCurso === formulario.id_formulario;
               return (
                 <tr
                   key={formulario.id_formulario}
                   className="transition-colors hover:bg-accent/5"
                 >
                   <td className="max-w-md px-6 py-4">
-                    <p className="truncate font-medium text-gray-900">
+                    <Link href={`/forms/${formulario.id_formulario}`} className="font-medium text-gray-900 hover:text-accent">
                       {formulario.titulo}
-                    </p>
+                    </Link>
                     {formulario.descripcion && (
                       <p className="mt-0.5 truncate text-sm text-gray-500">
                         {formulario.descripcion}
@@ -178,15 +294,33 @@ function TablaFormularios({ formularios }: { formularios: FormularioConPreguntas
                     </span>
                   </td>
                   <td className="px-6 py-4">
-                    <span
-                      className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium ring-1 ${estado.clases}`}
+                    <button
+                      type="button"
+                      onClick={() => onCambiarEstado(formulario)}
+                      disabled={ocupado}
+                      title={formulario.estado === "PUBLICADO" ? "Despublicar" : "Publicar"}
+                      aria-label={formulario.estado === "PUBLICADO" ? "Despublicar formulario" : "Publicar formulario"}
+                      className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium ring-1 transition
+                        ${estado.clases} ${ocupado ? "opacity-50" : "cursor-pointer hover:ring-2"}`}
                     >
                       <span className={`size-1.5 rounded-full ${estado.punto}`} />
-                      {estado.etiqueta}
-                    </span>
+                       {estado.etiqueta}
+                    </button>
                   </td>
                   <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500">
                     {fechaCorta(formulario.fecha_creacion)}
+                  </td>
+                  <td className="px-2 py-4 text-center">
+                    <button
+                      type="button"
+                      onClick={() => onEliminar({ formulario, preguntas })}
+                      disabled={ocupado}
+                      aria-label={`Eliminar ${formulario.titulo}`}
+                      title="Eliminar"
+                      className="rounded-lg p-2 text-gray-400 transition hover:bg-red-50 hover:text-red-600 disabled:opacity-40"
+                    >
+                      <Trash />
+                    </button>
                   </td>
                 </tr>
               );

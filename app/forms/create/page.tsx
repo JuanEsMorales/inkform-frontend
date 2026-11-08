@@ -96,6 +96,17 @@ export default function Create() {
     localStorage.setItem("makingState", formMakingStates.INITIAL);
   };
 
+  const handleCancel = () => {
+    localStorage.removeItem("formularioInfo");
+    localStorage.removeItem("makingState");
+    localStorage.removeItem("preguntas");
+    setFormularioInfo(FORMULARIO_INITIAL_STATE);
+    setPreguntas(PREGUNTAS_INITIAL_STATE);
+    setFormMaking(formMakingStates.INITIAL);
+
+    router.push("/dashboard");
+  }
+
   function buildPayload(
     formulario: Formulario,
     preguntas: QuestionToShow[],
@@ -250,7 +261,7 @@ export default function Create() {
           </section>
 
           <section className="flex justify-end gap-4">
-            <ButtonLink href="/dashboard" text="Cancelar" variant="CANCEL" />
+            <Button text="Cancelar" variant="CANCEL" handleFunction={handleCancel} />
             <Button text="Continuar" handleFunction={handleChangeToQuestions} />
           </section>
         </>
@@ -292,15 +303,12 @@ export default function Create() {
             ),
           )}
           <div className="flex gap-4 fixed bottom-5 right-10">
-            <Button
-              text="Cancelar"
-              variant="CANCEL"
-              handleFunction={handleChangeToInfo}
-            />
+            <Button text="Cancelar" variant="CANCEL" handleFunction={handleCancel} />
             <Button
               text="Crear"
               variant="PRINCIPAL"
               icon="CHECK"
+              disabled={isSaving}
               handleFunction={handleCreateForm}
             />
           </div>

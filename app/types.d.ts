@@ -4,6 +4,7 @@ export interface PropButton {
   handleFunction?: () => void
   icon?: "BACK" | "EDIT" | "OPTDEL" | "PLUS" | "CHECK"
   text: string
+  disabled?: boolean
 }
 
 export interface PropButtonLink extends PropButton {
@@ -31,6 +32,7 @@ export interface QuestionToShow extends Pregunta {
 }
 
 export interface Opcion {
+  id_opcion?: string
   id_pregunta: string;
   texto: string;
 }
@@ -65,7 +67,12 @@ export interface FormularioApi {
   fecha_creacion: string;
 }
 
+export interface PreguntasApi {
+  pregunta: PreguntaApi
+  opciones: OpcionApi[]
+}
+
 export interface FormularioConPreguntas {
   formulario: FormularioApi;
-  preguntas: { pregunta: PreguntaApi; opciones: OpcionApi[] }[];
+  preguntas: PreguntasApi[];
 }
